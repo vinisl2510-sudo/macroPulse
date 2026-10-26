@@ -1,0 +1,15 @@
+services:
+  postgres:
+    image: postgres:16
+    container_name: macropulse-db
+    environment:
+      POSTGRES_DB: macropulse
+      POSTGRES_USER: macropulse
+      POSTGRES_PASSWORD: macropulse
+    ports:
+      - "5433:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+volumes:
+  pgdata:

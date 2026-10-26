@@ -1,0 +1,16 @@
+server:
+  port: 8081
+
+spring:
+  application:
+    name: macropulse
+  datasource:
+    url: jdbc:postgresql://localhost:5433/macropulse
+    username: ${DB_USER:macropulse}
+    password: ${DB_PASSWORD:macropulse}
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+  flyway:
+    enabled: true
