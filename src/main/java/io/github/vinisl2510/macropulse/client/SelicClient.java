@@ -1,9 +1,11 @@
 package io.github.vinisl2510.macropulse.client;
 
 import io.github.vinisl2510.macropulse.dto.bcb.SelicBcbDTO;
+import io.github.vinisl2510.macropulse.exception.BcbIndisponivelException;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
+import org.springframework.web.client.RestClientException;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -19,10 +21,15 @@ public class SelicClient {
     }
 
     public List<SelicBcbDTO> buscarPorPeriodo (LocalDate inicio,LocalDate fim) {
-        return restClient.get()
-                .uri("https://api.bcb.gov.br/dados/serie/bcdata.sgs.432/dados?formato=json&dataInicial={inicio}&dataFinal={fim}"
-                        , DATA.format(inicio), DATA.format(fim))
-                .retrieve()
-                .body(new ParameterizedTypeReference<List<SelicBcbDTO>>() {}) ;
+        try {
+            return restClient.get()
+                    .uri("https://api.bcb.gov.br/dados/serie/bcdata.sgs.432/dados?formato=json&dataInicial={inicio}&dataFinal={fim}"
+                            , DATA.format(inicio), DATA.format(fim))
+                    .retrieve()
+                    .body(new ParameterizedTypeReference<List<SelicBcbDTO>>() {
+                    });
+        } catch (RestClientException e) {
+            throw new BcbIndisponivelException("Não foi possível consultar a Selic no Banco Central", e);
+        }
     }
 }
