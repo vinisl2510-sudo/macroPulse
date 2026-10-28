@@ -1,6 +1,9 @@
 package io.github.vinisl2510.macropulse.controller;
 
+import io.github.vinisl2510.macropulse.client.PtaxClient;
 import io.github.vinisl2510.macropulse.client.SelicClient;
+import io.github.vinisl2510.macropulse.dto.bcb.PtaxBcbDTO;
+import io.github.vinisl2510.macropulse.dto.bcb.PtaxRespostaBcbDTO;
 import io.github.vinisl2510.macropulse.dto.bcb.SelicBcbDTO;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -13,9 +16,11 @@ import java.util.List;
 @RequestMapping("/debug")
 public class DebugController {
     private final SelicClient selicClient;
+    private final PtaxClient ptaxClient;
 
-    public DebugController(SelicClient selicClient) {
+    public DebugController(SelicClient selicClient, PtaxClient ptaxClient) {
         this.selicClient = selicClient;
+        this.ptaxClient = ptaxClient;
     }
 
     @GetMapping("/selic")
@@ -23,6 +28,11 @@ public class DebugController {
         return selicClient.buscarPorPeriodo(LocalDate.now()
                 .minusDays(30),
                 LocalDate.now());
+    }
+
+    @GetMapping("/dolar")
+    public List<PtaxBcbDTO>cotacaoPeriodoDolar(){
+        return ptaxClient.cotacaoDolarPeriodo(LocalDate.now().minusDays(30), LocalDate.now());
     }
 
 }
