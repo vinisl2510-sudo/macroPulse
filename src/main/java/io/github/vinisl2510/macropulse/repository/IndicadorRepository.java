@@ -7,9 +7,12 @@ import org.hibernate.query.Order;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Optional;
 
 public interface IndicadorRepository extends JpaRepository<Indicador,Long > {
     Optional<Indicador> findTopByTipoOrderByDataDesc(TipoIndicador tipo);
     boolean existsByDataAndTipo(LocalDate data, TipoIndicador tipo);
+
+    List<Indicador> tipo(TipoIndicador tipo);
 }
