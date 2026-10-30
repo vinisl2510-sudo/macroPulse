@@ -25,4 +25,5 @@ public class Indicador {
         this.data = data;
         this.valor = valor;
     }
+
 }

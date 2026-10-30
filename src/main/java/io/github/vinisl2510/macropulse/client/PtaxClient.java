@@ -19,6 +19,7 @@ public class PtaxClient {
     private static final DateTimeFormatter DATA = DateTimeFormatter.ofPattern("MM-dd-yyyy");
 
     public PtaxClient(RestClient restClient) {
+
         this.restClient = restClient;
     }
 

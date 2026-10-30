@@ -44,4 +44,10 @@ public class DebugController {
         return "atualizado";
     }
 
+    @GetMapping("/carregar-Dolar")
+    public String carregarDolar(){
+        service.atualizarDolar();
+        return "atualizado";
+    }
+
 }
