@@ -1,0 +1,93 @@
+package io.github.vinisl2510.macropulse.service;
+
+import io.github.vinisl2510.macropulse.client.PtaxClient;
+import io.github.vinisl2510.macropulse.client.SelicClient;
+import io.github.vinisl2510.macropulse.dto.bcb.PtaxBcbDTO;
+import io.github.vinisl2510.macropulse.dto.bcb.PtaxRespostaBcbDTO;
+import io.github.vinisl2510.macropulse.dto.bcb.SelicBcbDTO;
+import io.github.vinisl2510.macropulse.model.Indicador;
+import io.github.vinisl2510.macropulse.model.TipoIndicador;
+import io.github.vinisl2510.macropulse.repository.IndicadorRepository;
+import org.springframework.stereotype.Service;
+
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
+@Service
+public class AtualizacaoService {
+    private final IndicadorRepository repository;
+    private final SelicClient client;
+    private final PtaxClient clientPtax;
+    private static final DateTimeFormatter FORMATO_SGS = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+
+    public AtualizacaoService(IndicadorRepository repository,
+                              SelicClient client,
+                              PtaxClient clientPtax) {
+        this.repository = repository;
+        this.client = client;
+        this.clientPtax = clientPtax;
+    }
+
+    public void atualizarSelic() {
+        LocalDate inicio = repository.findTopByTipoOrderByDataDesc(TipoIndicador.SELIC)
+                .map(ultimo -> ultimo.getData().plusDays(1))
+                .orElse(LocalDate.now().minusYears(2));
+        LocalDate hoje = LocalDate.now();
+        if(inicio.isAfter(hoje)){
+            return;
+        }
+        List<SelicBcbDTO> resposta = client.buscarPorPeriodo(inicio,hoje);
+
+        List<Indicador> novos = new ArrayList<>();
+        for (SelicBcbDTO dto : resposta){
+            LocalDate data = LocalDate.parse(dto.data(), FORMATO_SGS);
+            if (data.isAfter(hoje) || repository.existsByDataAndTipo(data,TipoIndicador.SELIC)){
+                continue;
+            }
+            BigDecimal valor = new BigDecimal(dto.valor());
+            Indicador indicador = new Indicador(TipoIndicador.SELIC, data, valor);
+
+            novos.add(indicador);
+
+        }
+
+        repository.saveAll(novos);
+    }
+
+    public void atualizarDolar(){
+        LocalDate inicio = repository.findTopByTipoOrderByDataDesc(TipoIndicador.DOLAR)
+                .map(ultimo -> ultimo.getData().plusDays(1))
+                .orElse(LocalDate.now().minusYears(2));
+        LocalDate hoje = LocalDate.now();
+        if (inicio.isAfter(hoje)){
+            return;
+        }
+
+        List<PtaxBcbDTO> resposta = clientPtax.cotacaoDolarPeriodo(inicio, hoje);
+        List<Indicador> novosPtax = new ArrayList<>();
+        Set<LocalDate> datasAdicionadas = new HashSet<>();
+
+
+        for (PtaxBcbDTO dto : resposta){
+            String textoData = dto.dataHoraCotacao().substring( 0, 10 );
+            LocalDate data = LocalDate.parse(textoData);
+            if (data.isAfter(hoje) || repository.existsByDataAndTipo(data, TipoIndicador.DOLAR)){
+                continue;
+            }
+            Indicador indicador = new Indicador(TipoIndicador.DOLAR, data, dto.cotacaoVenda());
+            if (datasAdicionadas.contains(data)){
+                continue;
+            }else{
+                datasAdicionadas.add(data);
+            }
+            novosPtax.add(indicador);
+        }
+        repository.saveAll(novosPtax);
+
+    }
+}

@@ -17,6 +17,7 @@ public class SelicClient {
     private static final DateTimeFormatter DATA = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
     public SelicClient(RestClient restClient) {
+
         this.restClient = restClient;
     }
 
