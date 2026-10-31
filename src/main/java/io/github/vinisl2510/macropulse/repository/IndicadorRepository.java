@@ -13,6 +13,6 @@ import java.util.Optional;
 public interface IndicadorRepository extends JpaRepository<Indicador,Long > {
     Optional<Indicador> findTopByTipoOrderByDataDesc(TipoIndicador tipo);
     boolean existsByDataAndTipo(LocalDate data, TipoIndicador tipo);
+    List<Indicador>findByTipoAndDataBetweenOrderByDataAsc(TipoIndicador tipo, LocalDate dataInicio, LocalDate dataFim);
 
-    List<Indicador> tipo(TipoIndicador tipo);
 }

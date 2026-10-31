@@ -1,0 +1,44 @@
+package io.github.vinisl2510.macropulse.controller;
+
+import io.github.vinisl2510.macropulse.dto.response.CotacaoDTO;
+import io.github.vinisl2510.macropulse.service.IndicadorQueryService;
+import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
+import java.time.LocalDate;
+import java.util.List;
+
+@RestController
+@RequestMapping("/api/indicadores")
+public class IndicadorController {
+    private final IndicadorQueryService indicadorQueryService;
+
+    public IndicadorController(IndicadorQueryService indicadorQueryService) {
+        this.indicadorQueryService = indicadorQueryService;
+    }
+
+    @GetMapping("/selic/atual")
+    public CotacaoDTO selicAtual(){
+        return indicadorQueryService.selicAtual();
+    }
+
+    @GetMapping("/dolar/atual")
+    public CotacaoDTO dolarAtual(){
+        return indicadorQueryService.dolarAtual();
+    }
+
+    @GetMapping("/selic/historico")
+    public List<CotacaoDTO> selicHistorico(@RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate inicio,
+                                           @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fim){
+        return indicadorQueryService.selicHistorico(inicio, fim);
+    }
+
+    @GetMapping("/dolar/historico")
+    public List<CotacaoDTO> dolarHistorico(@RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate inicio,
+                                          @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fim){
+        return indicadorQueryService.dolarHistorico(inicio, fim);
+    }
+}
