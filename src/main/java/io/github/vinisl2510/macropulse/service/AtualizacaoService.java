@@ -8,6 +8,7 @@ import io.github.vinisl2510.macropulse.dto.bcb.SelicBcbDTO;
 import io.github.vinisl2510.macropulse.model.Indicador;
 import io.github.vinisl2510.macropulse.model.TipoIndicador;
 import io.github.vinisl2510.macropulse.repository.IndicadorRepository;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
@@ -91,7 +92,8 @@ public class AtualizacaoService {
         repository.saveAll(novosPtax);
 
     }
-    
+
+    @CacheEvict(value = {"selicAtual", "selicHistorico", "dolarAtual", "dolarHistorico"}, allEntries = true)
     public void atualizarTudo(){
         atualizarSelic();
         atualizarDolar();
