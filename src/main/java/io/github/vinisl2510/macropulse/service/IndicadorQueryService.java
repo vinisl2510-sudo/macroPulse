@@ -1,6 +1,7 @@
 package io.github.vinisl2510.macropulse.service;
 
 import io.github.vinisl2510.macropulse.dto.response.CotacaoDTO;
+import io.github.vinisl2510.macropulse.dto.response.JuroRealDTO;
 import io.github.vinisl2510.macropulse.dto.response.VariacaoDTO;
 import io.github.vinisl2510.macropulse.exception.BcbIndisponivelException;
 import io.github.vinisl2510.macropulse.exception.DadosNaoEncontradosException;
@@ -54,6 +55,7 @@ public class IndicadorQueryService {
                 .toList();
     }
 
+    @Cacheable("dolarVariacao")
     public VariacaoDTO dolarVariacao(int dias){
         Indicador ultimo = indicadorRepository.findTopByTipoOrderByDataDesc(TipoIndicador.DOLAR)
                 .orElseThrow(() -> new DadosNaoEncontradosException("Dados Não Encontrados"));
@@ -71,5 +73,25 @@ public class IndicadorQueryService {
                 .setScale(2, RoundingMode.HALF_UP);
 
         return new VariacaoDTO(dias, valorInicial, valorFinal, variacao);
+    }
+
+    @Cacheable("JuroReal")
+    public JuroRealDTO juroReal(){
+        Indicador ultimoSelic = indicadorRepository.findTopByTipoOrderByDataDesc(TipoIndicador.SELIC)
+                .orElseThrow(() -> new DadosNaoEncontradosException("Nenhum valor da Selic encontrado"));
+        Indicador ultimoIpca = indicadorRepository.findTopByTipoOrderByDataDesc(TipoIndicador.IPCA_ESPERADO_12M)
+                .orElseThrow(() -> new DadosNaoEncontradosException("Nenhuma previsão do IPCA encontrada"));
+
+        BigDecimal selic = ultimoSelic.getValor();
+        BigDecimal ipca = ultimoIpca.getValor();
+
+        BigDecimal fatorSelic = selic.divide(BigDecimal.valueOf(100),6, RoundingMode.HALF_UP).add(BigDecimal.valueOf(1));
+        BigDecimal fatorIpca = ipca.divide(BigDecimal.valueOf(100),6, RoundingMode.HALF_UP).add(BigDecimal.valueOf(1));
+        BigDecimal juroReal = fatorSelic.divide( fatorIpca, 6, RoundingMode.HALF_UP)
+        .subtract(BigDecimal.valueOf(1))
+        .multiply(BigDecimal.valueOf(100))
+        .setScale(2, RoundingMode.HALF_UP);
+
+        return new JuroRealDTO(selic, ipca, juroReal,ultimoIpca.getData());
     }
 }

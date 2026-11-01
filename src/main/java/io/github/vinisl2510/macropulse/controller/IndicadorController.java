@@ -1,6 +1,7 @@
 package io.github.vinisl2510.macropulse.controller;
 
 import io.github.vinisl2510.macropulse.dto.response.CotacaoDTO;
+import io.github.vinisl2510.macropulse.dto.response.JuroRealDTO;
 import io.github.vinisl2510.macropulse.dto.response.VariacaoDTO;
 import io.github.vinisl2510.macropulse.service.IndicadorQueryService;
 import jakarta.validation.constraints.Min;
@@ -48,4 +49,10 @@ public class IndicadorController {
     public VariacaoDTO dolarVariacao(@RequestParam(defaultValue = "30") @Min(1) int dias) {
         return indicadorQueryService.dolarVariacao(dias);
     }
+
+    @GetMapping("/juro-real")
+    public JuroRealDTO juroReal() {
+        return indicadorQueryService.juroReal();
+    }
+
 }
