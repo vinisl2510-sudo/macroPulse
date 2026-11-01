@@ -8,6 +8,7 @@ import io.github.vinisl2510.macropulse.dto.bcb.SelicBcbDTO;
 import io.github.vinisl2510.macropulse.model.Indicador;
 import io.github.vinisl2510.macropulse.model.TipoIndicador;
 import io.github.vinisl2510.macropulse.repository.IndicadorRepository;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -89,5 +90,10 @@ public class AtualizacaoService {
         }
         repository.saveAll(novosPtax);
 
+    }
+    
+    public void atualizarTudo(){
+        atualizarSelic();
+        atualizarDolar();
     }
 }
