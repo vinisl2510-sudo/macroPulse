@@ -1,7 +1,9 @@
 package io.github.vinisl2510.macropulse.controller;
 
 import io.github.vinisl2510.macropulse.dto.response.CotacaoDTO;
+import io.github.vinisl2510.macropulse.dto.response.VariacaoDTO;
 import io.github.vinisl2510.macropulse.service.IndicadorQueryService;
+import jakarta.validation.constraints.Min;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -40,5 +42,10 @@ public class IndicadorController {
     public List<CotacaoDTO> dolarHistorico(@RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate inicio,
                                           @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fim){
         return indicadorQueryService.dolarHistorico(inicio, fim);
+    }
+
+    @GetMapping("/dolar/variacao")
+    public VariacaoDTO dolarVariacao(@RequestParam(defaultValue = "30") @Min(1) int dias) {
+        return indicadorQueryService.dolarVariacao(dias);
     }
 }

@@ -43,8 +43,8 @@ public class AtualizacaoService {
         if(inicio.isAfter(hoje)){
             return;
         }
-        List<SelicBcbDTO> resposta = client.buscarPorPeriodo(inicio,hoje);
-
+        List<SelicBcbDTO> resposta = client.buscarPorPeriodo(inicio.minusDays(1), hoje);
+        
         List<Indicador> novos = new ArrayList<>();
         for (SelicBcbDTO dto : resposta){
             LocalDate data = LocalDate.parse(dto.data(), FORMATO_SGS);
