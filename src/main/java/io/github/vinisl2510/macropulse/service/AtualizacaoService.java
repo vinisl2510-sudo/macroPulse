@@ -1,7 +1,9 @@
 package io.github.vinisl2510.macropulse.service;
 
+import io.github.vinisl2510.macropulse.client.FocusClient;
 import io.github.vinisl2510.macropulse.client.PtaxClient;
 import io.github.vinisl2510.macropulse.client.SelicClient;
+import io.github.vinisl2510.macropulse.dto.bcb.FocusBcbDTO;
 import io.github.vinisl2510.macropulse.dto.bcb.PtaxBcbDTO;
 import io.github.vinisl2510.macropulse.dto.bcb.PtaxRespostaBcbDTO;
 import io.github.vinisl2510.macropulse.dto.bcb.SelicBcbDTO;
@@ -25,14 +27,17 @@ public class AtualizacaoService {
     private final IndicadorRepository repository;
     private final SelicClient client;
     private final PtaxClient clientPtax;
+    private final FocusClient clientIpca;
     private static final DateTimeFormatter FORMATO_SGS = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
     public AtualizacaoService(IndicadorRepository repository,
                               SelicClient client,
-                              PtaxClient clientPtax) {
+                              PtaxClient clientPtax,
+                              FocusClient clientIpca) {
         this.repository = repository;
         this.client = client;
         this.clientPtax = clientPtax;
+        this.clientIpca = clientIpca;
     }
 
     public void atualizarSelic() {
@@ -43,7 +48,7 @@ public class AtualizacaoService {
         if(inicio.isAfter(hoje)){
             return;
         }
-        List<SelicBcbDTO> resposta = client.buscarPorPeriodo(inicio,hoje);
+        List<SelicBcbDTO> resposta = client.buscarPorPeriodo(inicio.minusDays(1), hoje);
 
         List<Indicador> novos = new ArrayList<>();
         for (SelicBcbDTO dto : resposta){
@@ -93,9 +98,39 @@ public class AtualizacaoService {
 
     }
 
+    public void atualizarIpcaEsperado(){
+        LocalDate inicio = repository.findTopByTipoOrderByDataDesc(TipoIndicador.IPCA_ESPERADO_12M)
+                .map(ultimo -> ultimo.getData().plusDays(1))
+                .orElse(LocalDate.now().minusYears(2));
+        LocalDate hoje = LocalDate.now();
+        if (inicio.isAfter(hoje)) {
+            return;
+        }
+        List<FocusBcbDTO> resposta = clientIpca.ipcaPedido(inicio);
+        List<Indicador> novosIPCA = new ArrayList<>();
+        Set<LocalDate> datasAdicionadas = new HashSet<>();
+
+
+        for (FocusBcbDTO dto : resposta){
+            LocalDate data = LocalDate.parse(dto.data());
+            if (data.isAfter(hoje) || repository.existsByDataAndTipo(data, TipoIndicador.IPCA_ESPERADO_12M)){
+                continue;
+            }
+            Indicador indicador = new Indicador(TipoIndicador.IPCA_ESPERADO_12M, data, dto.mediana());
+            if (datasAdicionadas.contains(data)){
+                continue;
+            }else{
+                datasAdicionadas.add(data);
+            }
+            novosIPCA.add(indicador);
+        }
+        repository.saveAll(novosIPCA);
+    }
+
     @CacheEvict(value = {"selicAtual", "selicHistorico", "dolarAtual", "dolarHistorico"}, allEntries = true)
     public void atualizarTudo(){
         atualizarSelic();
         atualizarDolar();
+        atualizarIpcaEsperado();
     }
 }
