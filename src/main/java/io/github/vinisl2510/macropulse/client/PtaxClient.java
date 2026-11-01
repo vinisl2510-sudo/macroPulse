@@ -25,8 +25,6 @@ public class PtaxClient {
 
     public List<PtaxBcbDTO> cotacaoDolarPeriodo (LocalDate inicio, LocalDate fim) {
         try {
-
-
             PtaxRespostaBcbDTO resposta = restClient.get()
                     .uri("https://olinda.bcb.gov.br/olinda/servico/PTAX/versao/v1/odata/CotacaoDolarPeriodo(dataInicial=@dataInicial,dataFinalCotacao=@dataFinalCotacao)?@dataInicial='{inicio}'&@dataFinalCotacao='{fim}'&$format=json"
                             , DATA.format(inicio), DATA.format(fim))
